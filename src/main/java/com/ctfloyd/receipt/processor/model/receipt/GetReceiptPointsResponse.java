@@ -8,13 +8,13 @@ import java.util.StringJoiner;
  */
 public class GetReceiptPointsResponse {
 
-    private int points;
+    private long points;
 
-    public int getPoints() {
+    public long getPoints() {
         return points;
     }
 
-    public void setPoints(int points) {
+    public void setPoints(long points) {
         this.points = points;
     }
 
@@ -46,7 +46,7 @@ public class GetReceiptPointsResponse {
             getReceiptPointsResponse = new GetReceiptPointsResponse();
         }
 
-        public Builder withPoints(int points) {
+        public Builder withPoints(long points) {
             getReceiptPointsResponse.setPoints(points);
             return this;
         }
