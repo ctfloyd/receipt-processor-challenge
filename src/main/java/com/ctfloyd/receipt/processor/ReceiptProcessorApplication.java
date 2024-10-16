@@ -1,13 +1,13 @@
-package com.ctfloyd.receipt_processor_challenge;
+package com.ctfloyd.receipt.processor;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ReceiptProcessorChallengeApplication {
+public class ReceiptProcessorApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ReceiptProcessorChallengeApplication.class, args);
+		SpringApplication.run(ReceiptProcessorApplication.class, args);
 	}
 
 }

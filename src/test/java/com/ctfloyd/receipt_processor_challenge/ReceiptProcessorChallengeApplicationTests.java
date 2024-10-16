@@ -1,10 +1,10 @@
-package com.ctfloyd.receipt_processor_challenge;
+package com.ctfloyd.receipt;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ReceiptProcessorChallengeApplicationTests {
+class ReceiptProcessorApplicationTests {
 
 	@Test
 	void contextLoads() {
