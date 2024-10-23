@@ -1,6 +1,7 @@
 package com.ctfloyd.receipt.processor.service.exception;
 
 import com.ctfloyd.receipt.processor.service.metrics.IMetrics;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -56,6 +58,15 @@ public class GlobalExceptionHandler {
         LOGGER.error("AN UNCAUGHT EXCEPTION OCCURRED!", exception);
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleHttpMessageNotReadableException(JsonMappingException exception, WebRequest request) {
+        metrics.increment(METRICS_NAMESPACE, "Error.Count.Http.400");
+        metrics.increment(METRICS_NAMESPACE, "Error.Count.HttpMessageNotReadable");
+        LOGGER.warn("Could not map given JSON object to a java object.", exception);
+        // Assume it's the caller's fault.
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     private String getUri(WebRequest request) {
