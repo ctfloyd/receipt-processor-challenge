@@ -1,5 +1,7 @@
 package com.ctfloyd.receipt.processor.model.receipt;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,9 +14,10 @@ import java.util.StringJoiner;
 public class Receipt {
 
     private String retailer;
-    private String purchaseDate;
-    private String purchaseTime;
+    private LocalDate purchaseDate;
+    private LocalTime purchaseTime;
     private final List<Item> items = new ArrayList<>();
+    private String total;
 
     public String getRetailer() {
         return retailer;
@@ -24,19 +27,19 @@ public class Receipt {
         this.retailer = retailer;
     }
 
-    public String getPurchaseDate() {
+    public LocalDate getPurchaseDate() {
         return purchaseDate;
     }
 
-    public void setPurchaseDate(String purchaseDate) {
+    public void setPurchaseDate(LocalDate purchaseDate) {
         this.purchaseDate = purchaseDate;
     }
 
-    public String getPurchaseTime() {
+    public LocalTime getPurchaseTime() {
         return purchaseTime;
     }
 
-    public void setPurchaseTime(String purchaseTime) {
+    public void setPurchaseTime(LocalTime purchaseTime) {
         this.purchaseTime = purchaseTime;
     }
 
@@ -63,6 +66,14 @@ public class Receipt {
         }
     }
 
+    public String getTotal() {
+        return total;
+    }
+
+    public void setTotal(String total) {
+        this.total = total;
+    }
+
     @Override
     public String toString() {
         return new StringJoiner(", ", Receipt.class.getSimpleName() + "[", "]")
@@ -70,6 +81,7 @@ public class Receipt {
                 .add("purchaseDate='" + purchaseDate + "'")
                 .add("purchaseTime='" + purchaseTime + "'")
                 .add("items=" + items)
+                .add("total=" + total)
                 .toString();
     }
 
@@ -78,14 +90,13 @@ public class Receipt {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Receipt receipt = (Receipt) o;
-        return Objects.equals(retailer, receipt.retailer) && Objects.equals(purchaseDate, receipt.purchaseDate) && Objects.equals(purchaseTime, receipt.purchaseTime) && Objects.equals(items, receipt.items);
+        return Objects.equals(retailer, receipt.retailer) && Objects.equals(purchaseDate, receipt.purchaseDate) && Objects.equals(purchaseTime, receipt.purchaseTime) && Objects.equals(items, receipt.items) && Objects.equals(total, receipt.total);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(retailer, purchaseDate, purchaseTime, items);
+        return Objects.hash(retailer, purchaseDate, purchaseTime, items, total);
     }
-
 
     public static final class Builder {
         private Receipt receipt;
@@ -99,12 +110,12 @@ public class Receipt {
             return this;
         }
 
-        public Builder withPurchaseDate(String purchaseDate) {
+        public Builder withPurchaseDate(LocalDate purchaseDate) {
             receipt.setPurchaseDate(purchaseDate);
             return this;
         }
 
-        public Builder withPurchaseTime(String purchaseTime) {
+        public Builder withPurchaseTime(LocalTime purchaseTime) {
             receipt.setPurchaseTime(purchaseTime);
             return this;
         }
@@ -116,6 +127,11 @@ public class Receipt {
 
         public Builder withItems(Collection<Item> items) {
             receipt.setItems(items);
+            return this;
+        }
+
+        public Builder withTotal(String total) {
+            receipt.setTotal(total);
             return this;
         }
 
