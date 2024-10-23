@@ -6,6 +6,9 @@ import jakarta.annotation.Nonnull;
 
 import java.time.LocalTime;
 
+/**
+ * The business logic for scoring receipts.
+ */
 public class Receipts {
 
     private static final int TOTAL_AMOUNT_IS_ROUND = 50;

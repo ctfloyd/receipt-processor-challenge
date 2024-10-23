@@ -45,6 +45,13 @@ public class ReceiptService {
                 throw new ServiceException(ErrorCode.INVALID_INPUT, message);
             }
 
+            if (!ReceiptValidator.isValid(receipt)) {
+                String message = "The receipt is invalid.";
+                LOGGER.warn(message);
+                metrics.increment(METRICS_NAMESPACE, "InvalidReceipt.processReceipt");
+                throw new ServiceException(ErrorCode.INVALID_INPUT, message);
+            }
+
             String receiptId = UUID.randomUUID().toString();
             int points = Receipts.scoreReceipt(receipt);
             receiptDao.savePoints(receiptId, points);
@@ -71,8 +78,15 @@ public class ReceiptService {
         long start = System.currentTimeMillis();
         try {
             if (receiptId == null) {
-                // TODO: Do more strict validation of the receipt id. The regex is given in the API specification.
                 String message = "Receipt id must be specified.";
+                LOGGER.warn(message);
+                metrics.increment(METRICS_NAMESPACE, "NullReceiptId.getReceiptPoints");
+                // The API specification demands only 404s are thrown from the input instead of 400s.
+                throw new ServiceException(ErrorCode.NOT_FOUND, message);
+            }
+
+            if (!ReceiptValidator.isValidId(receiptId)) {
+                String message = "Receipt id is not valid.";
                 LOGGER.warn(message);
                 metrics.increment(METRICS_NAMESPACE, "InvalidReceiptId.getReceiptPoints");
                 // The API specification demands only 404s are thrown from the input instead of 400s.
