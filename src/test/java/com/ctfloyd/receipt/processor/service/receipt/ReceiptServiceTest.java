@@ -1,6 +1,9 @@
 package com.ctfloyd.receipt.processor.service.receipt;
 
 import com.ctfloyd.receipt.processor.model.receipt.GetReceiptPointsResponse;
+import com.ctfloyd.receipt.processor.model.receipt.Item;
+import com.ctfloyd.receipt.processor.model.receipt.ProcessReceiptResponse;
+import com.ctfloyd.receipt.processor.model.receipt.Receipt;
 import com.ctfloyd.receipt.processor.service.exception.ServiceException;
 import com.ctfloyd.receipt.processor.service.metrics.IMetrics;
 import com.ctfloyd.receipt.processor.service.receipt.data.IReceiptDao;
@@ -8,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,6 +81,47 @@ public class ReceiptServiceTest {
         // 1 increment metric (call), 1 timing metric
         verify(metrics, times(1)).increment(anyString(), anyString());
         verify(metrics, times(1)).time(anyString(), anyString(), anyLong());
+    }
+
+    @Test
+    public void givenNullReceipt_whenProcessReceipt_expectInvalidInputError() {
+        assertThrows(
+                ServiceException.class,
+                () -> receiptService.processReceipt(null),
+                "Receipt must not be null."
+        );
+        // 2 increment metrics (error and call), 1 timing metric
+        verify(metrics, times(2)).increment(anyString(), anyString());
+        verify(metrics, times(1)).time(anyString(), anyString(), anyLong());
+    }
+
+    @Test
+    public void givenValidReceipt_whenProcessReceipt_expectProcessReceiptResponse() {
+        Receipt receipt = new Receipt.Builder()
+                .withRetailer("M&M Corner Market")
+                .withPurchaseDate(LocalDate.of(2022, 3, 20))
+                .withPurchaseTime(LocalTime.of(14, 33))
+                .withItem(buildItem("Gatorade", "2.25"))
+                .withItem(buildItem("Gatorade", "2.25"))
+                .withItem(buildItem("Gatorade", "2.25"))
+                .withItem(buildItem("Gatorade", "2.25"))
+                .withTotal("9.00")
+                .build();
+
+        ProcessReceiptResponse response = receiptService.processReceipt(receipt);
+        assertNotNull(response, "Expected get points response to be non-null.");
+        assertNotNull(response.getId(), "Expected response to have an id");
+
+        // 1 increment metric (call), 1 timing metric
+        verify(metrics, times(1)).increment(anyString(), anyString());
+        verify(metrics, times(1)).time(anyString(), anyString(), anyLong());
+    }
+
+    private Item buildItem(String description, String price) {
+        return new Item.Builder()
+                .withShortDescription(description)
+                .withPrice(price)
+                .build();
     }
 
 }

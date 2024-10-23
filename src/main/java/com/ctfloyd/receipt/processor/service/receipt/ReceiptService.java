@@ -1,6 +1,8 @@
 package com.ctfloyd.receipt.processor.service.receipt;
 
 import com.ctfloyd.receipt.processor.model.receipt.GetReceiptPointsResponse;
+import com.ctfloyd.receipt.processor.model.receipt.ProcessReceiptResponse;
+import com.ctfloyd.receipt.processor.model.receipt.Receipt;
 import com.ctfloyd.receipt.processor.service.exception.ErrorCode;
 import com.ctfloyd.receipt.processor.service.exception.ServiceException;
 import com.ctfloyd.receipt.processor.service.metrics.IMetrics;
@@ -13,6 +15,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Defines the business and orchestration logic for processing receipts and persisting receipt point data.
@@ -30,6 +33,38 @@ public class ReceiptService {
     public ReceiptService(IReceiptDao receiptDao, IMetrics metrics)  {
         this.receiptDao = Objects.requireNonNull(receiptDao, "ReceiptDao is required.");
         this.metrics = Objects.requireNonNull(metrics, "Metrics is required.");
+    }
+
+    public ProcessReceiptResponse processReceipt(Receipt receipt) {
+        long start = System.currentTimeMillis();
+        try {
+            if (receipt == null) {
+                String message = "Receipt must not be null.";
+                LOGGER.warn(message);
+                metrics.increment(METRICS_NAMESPACE, "NullReceipt.processReceipt");
+                throw new ServiceException(ErrorCode.INVALID_INPUT, message);
+            }
+
+            String receiptId = UUID.randomUUID().toString();
+            int points = Receipts.scoreReceipt(receipt);
+            receiptDao.savePoints(receiptId, points);
+
+            return new ProcessReceiptResponse.Builder()
+                    .withId(receiptId)
+                    .build();
+        } catch (ServiceException ex) {
+            throw ex; // already handled exception
+        } catch (Exception ex) {
+            String message = "An unexpected error occurred while process the receipt. %s";
+            message = String.format(message, ex.getMessage());
+            LOGGER.error(message, ex);
+            metrics.increment(METRICS_NAMESPACE, "GenericError.processReceipt");
+            throw new ServiceException(ErrorCode.GENERIC_ERROR, message);
+        } finally {
+            long end = System.currentTimeMillis();
+            metrics.time(METRICS_NAMESPACE, "Time.processReceipt", end - start);
+            metrics.increment(METRICS_NAMESPACE, "Call.processReceipt");
+        }
     }
 
     public GetReceiptPointsResponse getReceiptPoints(String receiptId) {
@@ -66,7 +101,7 @@ public class ReceiptService {
             throw new ServiceException(ErrorCode.GENERIC_ERROR, message);
         } finally {
             long end = System.currentTimeMillis();
-            metrics.time(METRICS_NAMESPACE, "Time.getReceiptPoints", start - end);
+            metrics.time(METRICS_NAMESPACE, "Time.getReceiptPoints", end - start);
             metrics.increment(METRICS_NAMESPACE, "Call.getReceiptPoints");
         }
     }
